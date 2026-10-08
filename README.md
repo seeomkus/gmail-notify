@@ -1,5 +1,9 @@
 # Gmail Notify
 
+<p align="center">
+  <img src="docs/gmail-notify-cloud-dashboard-illustration-landscape.png" alt="Gmail Notify: platform notifikasi dan penjadwalan email, dokumen teknis versi 1.0.0" width="100%">
+</p>
+
 Aplikasi web untuk mengirim notifikasi email lewat Gmail: template siap pakai, broadcast personal, jadwal otomatis, riwayat pengiriman, serta login manual atau Google.
 
 > **Penulis:** Kusnandar Rohim (**SeeOmKus**) · [www.seeomkus.com](https://www.seeomkus.com) · Oktober 2026
@@ -185,10 +189,6 @@ tombol Google di halaman login tampil nonaktif dengan keterangan "Belum diaktifk
 *Deployment di Linux: Nginx sebagai reverse proxy HTTPS di depan satu proses Node.js.*
 
 ## Dokumentasi teknis
-
-![Sampul dokumen teknis](docs/images/cover-banner.png)
-
-*Sampul dokumen teknis Gmail Notify v1.0.0 (PDF, DOCX, dan Markdown).*
 
 Dokumen teknis lengkap (arsitektur, basis data, antarmuka, API, keamanan, deployment, pengujian, operasional) tersedia dalam tiga format:
 
