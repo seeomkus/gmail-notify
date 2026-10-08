@@ -1,0 +1,19 @@
+{
+  "name": "gmail-notify",
+  "version": "1.0.0",
+  "author": {
+    "name": "Kusnandar Rohim (SeeOmKus)",
+    "url": "https://www.seeomkus.com"
+  },
+  "homepage": "https://www.seeomkus.com",
+  "private": true,
+  "description": "Aplikasi notifikasi email Gmail (Vue + Express/TypeScript + SQLite)",
+  "scripts": {
+    "build": "node scripts/app.mjs build",
+    "start": "node scripts/app.mjs start",
+    "stop": "node scripts/app.mjs stop",
+    "restart": "node scripts/app.mjs restart",
+    "status": "node scripts/app.mjs status",
+    "logs": "node scripts/app.mjs logs"
+  }
+}

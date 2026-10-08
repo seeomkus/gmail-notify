@@ -1,0 +1,27 @@
+# dependensi & hasil build
+node_modules
+dist
+dist-test
+
+# konfigurasi & rahasia lokal (jangan pernah di-commit)
+.env
+.env.*
+!.env.example
+
+# data runtime: basis data (berisi App Password & pengguna), PID, log
+backend/data
+*.db
+*.db-wal
+*.db-shm
+.run
+*.log
+
+# pembuat dokumen
+docs/build/node_modules
+docs/build/.chrome-profile*
+docs/build/out
+
+# lain-lain
+.claude/
+.DS_Store
+Thumbs.db

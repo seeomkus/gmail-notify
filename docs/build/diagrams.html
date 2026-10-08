@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<title>Diagram Gmail Notify</title>
+<style>
+  body { margin: 0; background: #fff; font-family: "Segoe UI", Calibri, Arial, sans-serif; }
+  .fig { display: inline-block; background: #fff; padding: 0; margin: 0 0 20px 0; vertical-align: top; }
+  svg text { font-family: "Segoe UI", Calibri, Arial, sans-serif; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+// ======== palet ========
+const C = { indigo: "#4f46e5", blue: "#2563eb", teal: "#0d9488", amber: "#f59e0b", violet: "#8b5cf6", red: "#ea4335",
+  green: "#16a34a", slate: "#475569", pink: "#db2777", sky: "#0ea5e9", ink: "#0f172a", muted: "#64748b", line: "#cbd5e1", soft: "#f8fafc" };
+
+const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+// ======== primitif ========
+function box(x, y, w, h, { title, lines = [], color = C.indigo, fill = "#ffffff", titleSize = 15, lineSize = 12.5, align = "left" }) {
+  const cx = x + w / 2;
+  const tx = align === "center" ? cx : x + 14;
+  const anchor = align === "center" ? "middle" : "start";
+  let out = `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="10" fill="${fill}" stroke="${C.line}" stroke-width="1.4"/>`;
+  out += `<path d="M${x + 10} ${y} h${w - 20} a10 10 0 0 1 10 10 v2 h-${w} v-2 a10 10 0 0 1 10 -10z" fill="${color}"/>`;
+  out += `<text x="${tx}" y="${y + 30}" font-size="${titleSize}" font-weight="700" fill="${C.ink}" text-anchor="${anchor}">${esc(title)}</text>`;
+  lines.forEach((l, i) => {
+    out += `<text x="${tx}" y="${y + 52 + i * (lineSize + 5)}" font-size="${lineSize}" fill="${C.muted}" text-anchor="${anchor}">${esc(l)}</text>`;
+  });
+  return out;
+}
+
+function group(x, y, w, h, label, color = C.slate) {
+  return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="14" fill="${color}0d" stroke="${color}" stroke-width="1.5" stroke-dasharray="7 5"/>` +
+    `<text x="${x + 16}" y="${y + 24}" font-size="13.5" font-weight="700" fill="${color}">${esc(label)}</text>`;
+}
+
+function arrow(pts, { label = "", color = C.slate, dashed = false, both = false, lx, ly, labelW } = {}) {
+  const d = pts.map((p, i) => (i ? "L" : "M") + p[0] + " " + p[1]).join(" ");
+  let out = `<path d="${d}" fill="none" stroke="${color}" stroke-width="2" ${dashed ? 'stroke-dasharray="6 5"' : ""} marker-end="url(#ah-${color.slice(1)})" ${both ? `marker-start="url(#ahs-${color.slice(1)})"` : ""}/>`;
+  if (label) {
+    const mid = pts.length === 2 ? [(pts[0][0] + pts[1][0]) / 2, (pts[0][1] + pts[1][1]) / 2] : pts[Math.floor(pts.length / 2)];
+    const x = lx ?? mid[0], y = ly ?? mid[1];
+    const w = labelW ?? label.length * 6.6 + 14;
+    out += `<rect x="${x - w / 2}" y="${y - 11}" width="${w}" height="20" rx="5" fill="#fff" opacity="0.96"/>`;
+    out += `<text x="${x}" y="${y + 4}" font-size="12" fill="${color}" text-anchor="middle" font-weight="600">${esc(label)}</text>`;
+  }
+  return out;
+}
+
+function defs() {
+  const cols = Object.values(C).filter((c) => c.startsWith("#") && c.length === 7);
+  return `<defs>${cols.map((c) => {
+    const id = c.slice(1);
+    return `<marker id="ah-${id}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="${c}"/></marker>` +
+           `<marker id="ahs-${id}" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M10 0 L0 5 L10 10 z" fill="${c}"/></marker>`;
+  }).join("")}</defs>`;
+}
+
+function fig(id, w, h, inner) {
+  const el = document.createElement("div");
+  el.className = "fig"; el.id = id;
+  el.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">${defs()}<rect width="${w}" height="${h}" fill="#fff"/>${inner}</svg>`;
+  document.getElementById("root").appendChild(el);
+}
+
+const T = (x, y, s, o = {}) => `<text x="${x}" y="${y}" font-size="${o.size ?? 13}" fill="${o.color ?? C.muted}" font-weight="${o.bold ? 700 : 400}" text-anchor="${o.anchor ?? "start"}">${esc(s)}</text>`;
+
+// ============ D1. Arsitektur sistem ============
+(() => {
+  let s = "";
+  // --- kiri: perangkat pengguna
+  s += group(20, 20, 270, 560, "PERANGKAT PENGGUNA", C.blue);
+  s += box(40, 60, 230, 140, { title: "Aplikasi Vue 3 (SPA)", color: C.blue, lines: ["Browser · Vite · TypeScript", "Ikon @mdi/js", "Tema terang / gelap"] });
+  s += box(40, 225, 230, 120, { title: "Halaman aplikasi", color: C.sky, lines: ["Masuk / Daftar · Kirim", "Jadwal · Riwayat", "Pengaturan"] });
+  s += box(40, 370, 230, 100, { title: "Google Identity Services", color: C.red, lines: ["Skrip tombol Google", "(dimuat dari accounts.google.com)"] });
+
+  // --- tengah: server
+  s += group(340, 20, 480, 560, "SERVER  ·  Node.js 22 + Express 4  (satu proses)", C.indigo);
+  s += box(360, 60, 215, 100, { title: "API REST", color: C.indigo, lines: ["server.ts", "Validasi · guard login/admin", "Sajikan frontend hasil build"] });
+  s += box(595, 60, 205, 100, { title: "Autentikasi", color: C.violet, lines: ["auth.ts", "Sesi cookie · scrypt", "Google · reset password"] });
+  s += box(360, 190, 215, 100, { title: "Template", color: C.pink, lines: ["templates.ts", "9 template HTML + teks", "Personalisasi {{nama}}"] });
+  s += box(595, 190, 205, 100, { title: "Pengirim", color: C.teal, lines: ["sender.ts · mailer.ts", "notify · broadcast", "Pesan error yang ramah"] });
+  s += box(360, 320, 440, 100, { title: "Scheduler", color: C.amber, lines: ["schedules.ts · memeriksa jadwal tiap 10 detik", "sekali · interval · harian · mingguan"] });
+  s += box(360, 450, 440, 110, { title: "SQLite (better-sqlite3, mode WAL)", color: C.green, lines: ["backend/data/app.db", "users · sessions · password_resets · settings · email_logs · schedules"], lineSize: 12 });
+
+  // --- kanan: layanan Google
+  s += group(860, 20, 220, 560, "LAYANAN GOOGLE", C.red);
+  s += box(875, 60, 190, 100, { title: "Verifikasi ID token", color: C.red, lines: ["OAuth 2.0 · JWT Google"] });
+  s += box(875, 190, 190, 100, { title: "Gmail SMTP", color: C.red, lines: ["smtp.gmail.com:465 (SSL)", "memakai App Password"] });
+
+  // --- panah
+  s += arrow([[270, 130], [360, 110]], { color: C.blue, both: true });
+  s += T(315, 104, "HTTP / JSON", { size: 11.5, anchor: "middle", color: C.blue, bold: true });
+  s += arrow([[575, 110], [595, 110]], { color: C.slate });
+  s += arrow([[800, 110], [875, 110]], { color: C.red, dashed: true, label: "ID token", lx: 838, ly: 98 });
+  s += arrow([[467, 160], [467, 190]], { color: C.slate });
+  s += arrow([[575, 240], [595, 240]], { color: C.slate });
+  s += arrow([[800, 240], [875, 240]], { color: C.red, label: "SMTP", lx: 838, ly: 228 });
+  s += arrow([[697, 320], [697, 290]], { color: C.amber });
+  s += arrow([[580, 420], [580, 450]], { color: C.green, both: true });
+  s += T(20, 598, "Seluruh modul server membaca/menulis SQLite. Frontend hasil build disajikan langsung oleh server yang sama (satu proses, satu port).", { size: 12 });
+  fig("fig-arsitektur", 1100, 610, s);
+})();
+
+// ============ D2. ERD ============
+(() => {
+  const tbl = (x, y, w, name, color, cols) => {
+    const rowH = 21, h = 38 + cols.length * rowH + 10;
+    let o = `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="10" fill="#fff" stroke="${C.line}" stroke-width="1.4"/>`;
+    o += `<path d="M${x + 10} ${y} h${w - 20} a10 10 0 0 1 10 10 v20 h-${w} v-20 a10 10 0 0 1 10 -10z" fill="${color}"/>`;
+    o += `<text x="${x + 14}" y="${y + 23}" font-size="15" font-weight="700" fill="#fff">${esc(name)}</text>`;
+    cols.forEach(([n, t, k], i) => {
+      const yy = y + 38 + i * rowH + 15;
+      o += `<text x="${x + 14}" y="${yy}" font-size="12" font-weight="${k ? 700 : 400}" fill="${k ? C.ink : C.slate}">${esc(n)}</text>`;
+      o += `<text x="${x + w - 12}" y="${yy}" font-size="11.5" fill="${C.muted}" text-anchor="end">${esc(t)}${k ? "  " + k : ""}</text>`;
+    });
+    return { svg: o, h };
+  };
+  let s = "";
+  const users = tbl(30, 30, 300, "users", C.violet, [
+    ["id", "INTEGER", "PK"], ["email", "TEXT", "UNIQUE"], ["name", "TEXT"], ["username", "TEXT", "UNIQUE"], ["password_hash", "TEXT"],
+    ["google_id", "TEXT", "UNIQUE"], ["picture", "TEXT"], ["role", "admin | user"], ["is_demo", "INTEGER"], ["profile_completed", "INTEGER"],
+    ["created_at", "TEXT"], ["last_login_at", "TEXT"]]);
+  const sessions = tbl(430, 30, 270, "sessions", C.indigo, [["token_hash", "TEXT", "PK"], ["user_id", "INTEGER", "FK"], ["expires_at", "TEXT"], ["created_at", "TEXT"]]);
+  const resets = tbl(430, 200, 270, "password_resets", C.indigo, [["token_hash", "TEXT", "PK"], ["user_id", "INTEGER", "FK"], ["expires_at", "TEXT"], ["used_at", "TEXT"]]);
+  const settings = tbl(430, 370, 270, "settings", C.green, [["key", "TEXT", "PK"], ["value", "TEXT (JSON)"]]);
+  const logs = tbl(790, 30, 290, "email_logs", C.teal, [
+    ["id", "INTEGER", "PK"], ["to_addr", "TEXT"], ["cc", "TEXT"], ["bcc", "TEXT"], ["subject", "TEXT"], ["message", "TEXT"],
+    ["status", "sent | failed"], ["error", "TEXT"], ["message_id", "TEXT"], ["template_id", "TEXT"], ["created_at", "TEXT"]]);
+  const sched = tbl(790, 330, 290, "schedules", C.amber, [
+    ["id", "INTEGER", "PK"], ["name", "TEXT"], ["enabled", "INTEGER"], ["repeat", "once|interval|daily|weekly"], ["run_at", "TEXT"],
+    ["interval_min", "INTEGER"], ["time_of_day", "TEXT"], ["weekdays", "TEXT (JSON)"], ["job", "TEXT (JSON)"], ["next_run_at", "TEXT"],
+    ["last_run_at", "TEXT"], ["last_status", "TEXT"], ["last_result", "TEXT"], ["run_count", "INTEGER"]]);
+  s += users.svg + sessions.svg + resets.svg + settings.svg + logs.svg + sched.svg;
+  s += arrow([[330, 100], [430, 100]], { color: C.violet, label: "1 : N", lx: 380, ly: 90, both: false });
+  s += arrow([[330, 250], [430, 250]], { color: C.violet, label: "1 : N", lx: 380, ly: 240 });
+  s += arrow([[935, 330], [935, 313]], { color: C.amber, dashed: true });
+  s += T(922, 326, "menghasilkan catatan (relasi logis)", { size: 11.5, color: C.amber, anchor: "end" });
+  s += T(30, 360, "Relasi kunci asing: sessions.user_id dan password_resets.user_id", { size: 12 });
+  s += T(30, 378, "mengacu ke users.id (ON DELETE CASCADE).", { size: 12 });
+  s += T(30, 410, "Tabel settings, email_logs, dan schedules bersifat data bersama", { size: 12 });
+  s += T(30, 428, "(tidak dipisah per pengguna), sehingga tanpa kunci asing.", { size: 12 });
+  s += T(30, 460, "Kolom job pada schedules berisi JSON isi pengiriman", { size: 12 });
+  s += T(30, 478, "(mode, penerima, subjek, template, nilai field).", { size: 12 });
+  fig("fig-erd", 1110, 720, s);
+})();
+
+// ============ D3. Alur pengiriman ============
+(() => {
+  let s = "";
+  const row1 = 40, row2 = 230;
+  s += box(20, row1, 200, 100, { title: "1. Form Kirim", color: C.blue, lines: ["Pilih template, isi penerima", "dan pesan (atau jadwal)"] });
+  s += box(270, row1, 210, 100, { title: "2. Endpoint API", color: C.indigo, lines: ["POST /api/notify", "POST /api/broadcast"] });
+  s += box(530, row1, 210, 100, { title: "3. prepareJob()", color: C.violet, lines: ["Validasi email, subjek,", "pesan, template, batas 200"] });
+  s += box(790, row1, 210, 100, { title: "4. runJob()", color: C.teal, lines: ["Buka transporter SMTP", "(openMailer, sekali)"] });
+  s += box(790, row2, 210, 110, { title: "5. Per penerima", color: C.pink, lines: ["fillVars {{nama}}", "renderEmail() HTML+teks", "(broadcast: 1 email/orang)"] });
+  s += box(530, row2, 210, 110, { title: "6. Kirim via SMTP", color: C.red, lines: ["Gmail smtp:465", "Pesan error diterjemahkan", "(EAUTH, koneksi, dll.)"] });
+  s += box(270, row2, 210, 110, { title: "7. Catat ke SQLite", color: C.green, lines: ["INSERT email_logs", "status sent / failed", "message_id, template_id"] });
+  s += box(20, row2, 200, 110, { title: "8. Respons", color: C.blue, lines: ["notify: success/error", "broadcast: ringkasan", "terkirim & gagal"] });
+  s += arrow([[220, 90], [270, 90]], { color: C.slate });
+  s += arrow([[480, 90], [530, 90]], { color: C.slate });
+  s += arrow([[740, 90], [790, 90]], { color: C.slate });
+  s += arrow([[895, 140], [895, 230]], { color: C.slate });
+  s += arrow([[790, 285], [740, 285]], { color: C.slate });
+  s += arrow([[530, 285], [480, 285]], { color: C.slate });
+  s += arrow([[270, 285], [220, 285]], { color: C.slate });
+  s += arrow([[635, 140], [635, 175], [120, 175], [120, 140]], { color: C.red, dashed: true, label: "Validasi gagal: HTTP 400 + pesan", lx: 380, ly: 175, labelW: 230 });
+  s += T(20, 400, "Jalur yang sama dipakai oleh scheduler: jadwal tersimpan sebagai JSON, divalidasi ulang saat jam kirim, lalu dijalankan oleh runJob().", { size: 12.5 });
+  fig("fig-alur-kirim", 1020, 420, s);
+})();
+
+// ============ D4. Alur autentikasi ============
+(() => {
+  let s = "";
+  const lane = (y, label, color) => group(20, y, 1060, 175, label, color);
+  s += lane(15, "A. DAFTAR / MASUK MANUAL", C.blue);
+  s += box(40, 55, 190, 110, { title: "Form", color: C.blue, lines: ["email atau username", "password"] });
+  s += box(280, 55, 220, 110, { title: "POST /api/auth/login", color: C.indigo, lines: ["atau /register", "pembatasan: 5 gagal/15 mnt"] });
+  s += box(550, 55, 240, 110, { title: "scrypt + garam acak", color: C.violet, lines: ["hash disimpan / dicocokkan", "timingSafeEqual"] });
+  s += box(840, 55, 220, 110, { title: "Sesi", color: C.green, lines: ["token acak 256-bit", "hash SHA-256 di DB", "cookie HttpOnly, 7 hari"] });
+  s += arrow([[230, 110], [280, 110]], { color: C.slate });
+  s += arrow([[500, 110], [550, 110]], { color: C.slate });
+  s += arrow([[790, 110], [840, 110]], { color: C.slate });
+
+  s += lane(205, "B. MASUK / DAFTAR DENGAN GOOGLE", C.red);
+  s += box(40, 245, 190, 110, { title: "Tombol Google", color: C.red, lines: ["Google Identity Services", "menghasilkan ID token"] });
+  s += box(280, 245, 220, 110, { title: "POST /api/auth/google", color: C.indigo, lines: ["kirim credential (JWT)"] });
+  s += box(550, 245, 240, 110, { title: "verifyIdToken()", color: C.red, lines: ["cek audience = Client ID", "email_verified = true"] });
+  s += box(840, 245, 220, 110, { title: "Cari / tautkan / buat", color: C.teal, lines: ["akun baru otomatis", "profil perlu ditinjau", "lalu sesi dibuat"] });
+  s += arrow([[230, 300], [280, 300]], { color: C.slate });
+  s += arrow([[500, 300], [550, 300]], { color: C.slate });
+  s += arrow([[790, 300], [840, 300]], { color: C.slate });
+
+  s += lane(395, "C. LUPA PASSWORD", C.amber);
+  s += box(40, 435, 190, 110, { title: "Form lupa", color: C.amber, lines: ["input email", "jawaban selalu sama"] });
+  s += box(280, 435, 220, 110, { title: "POST /auth/forgot", color: C.indigo, lines: ["token acak, hash di DB", "berlaku 30 menit"] });
+  s += box(550, 435, 240, 110, { title: "Email via Gmail", color: C.red, lines: ["tautan  /#reset=TOKEN", "gagal kirim: tautan ke log"] });
+  s += box(840, 435, 220, 110, { title: "POST /auth/reset", color: C.green, lines: ["token sekali pakai", "hash baru, semua sesi", "pengguna dihapus"] });
+  s += arrow([[230, 490], [280, 490]], { color: C.slate });
+  s += arrow([[500, 490], [550, 490]], { color: C.slate });
+  s += arrow([[790, 490], [840, 490]], { color: C.slate });
+  fig("fig-auth", 1100, 590, s);
+})();
+
+// ============ D5. Scheduler ============
+(() => {
+  let s = "";
+  s += box(20, 40, 190, 110, { title: "Timer", color: C.amber, lines: ["setInterval 10 detik", "(+ sekali saat start)"] });
+  s += box(260, 40, 230, 110, { title: "Cari jadwal jatuh tempo", color: C.indigo, lines: ["enabled = 1", "next_run_at <= sekarang"] });
+  s += box(540, 40, 230, 110, { title: "execute(jadwal)", color: C.teal, lines: ["prepareJob() ulang", "runJob() → kirim email"] });
+  s += box(820, 40, 240, 110, { title: "Perbarui jadwal", color: C.green, lines: ["last_run_at, last_status", "last_result, run_count"] });
+  s += arrow([[210, 95], [260, 95]], { color: C.slate });
+  s += arrow([[490, 95], [540, 95]], { color: C.slate });
+  s += arrow([[770, 95], [820, 95]], { color: C.slate });
+
+  s += box(540, 210, 230, 120, { title: "Hitung berikutnya", color: C.violet, lines: ["nextAfter(spec, sekarang)", "tanpa mengejar yang terlewat"] });
+  s += box(820, 210, 240, 120, { title: "Jadwal 'sekali'", color: C.slate, lines: ["next_run_at = NULL", "enabled = 0 (selesai)"] });
+  s += box(260, 210, 230, 120, { title: "Kirim sekarang (manual)", color: C.pink, lines: ["POST /schedules/:id/run", "jadwal berikutnya tetap"] });
+  s += arrow([[940, 150], [940, 180], [655, 180], [655, 210]], { color: C.slate, label: "berulang", lx: 800, ly: 180 });
+  s += arrow([[1000, 150], [1000, 210]], { color: C.slate, label: "sekali", lx: 1000, ly: 185, labelW: 50 });
+  s += arrow([[375, 210], [375, 160], [655, 160], [655, 150]], { color: C.pink, dashed: true });
+  s += T(20, 372, "Perlindungan: satu jadwal tidak dijalankan ganda (daftar 'running'), dan putaran timer tidak saling tumpang tindih.", { size: 12.5 });
+  fig("fig-scheduler", 1080, 395, s);
+})();
+
+// ============ D6. Deployment ============
+(() => {
+  let s = "";
+  s += box(20, 60, 190, 100, { title: "Pengguna", color: C.blue, lines: ["Browser (HTTPS)"] });
+  s += group(270, 20, 560, 330, "SERVER LINUX", C.indigo);
+  s += box(290, 60, 200, 110, { title: "Nginx", color: C.green, lines: ["Reverse proxy", "HTTPS 443 · Let's Encrypt", "X-Forwarded-Proto"] });
+  s += box(540, 60, 270, 110, { title: "Node.js (systemd / app.sh)", color: C.indigo, lines: ["dist/server.js · 127.0.0.1:3100", "API + frontend hasil build", "NODE_ENV=production"] });
+  s += box(540, 210, 270, 120, { title: "Penyimpanan", color: C.teal, lines: ["backend/data/app.db (+ -wal, -shm)", ".run/app.log · .run/app.pid", "backup rutin (sqlite .backup)"] });
+  s += box(290, 210, 200, 120, { title: "Firewall", color: C.red, lines: ["Masuk: 80 / 443", "Keluar: 465 (SMTP),", "443 (Google)"] });
+  s += group(880, 20, 200, 330, "INTERNET", C.red);
+  s += box(895, 60, 170, 100, { title: "Gmail SMTP", color: C.red, lines: ["smtp.gmail.com:465"] });
+  s += box(895, 190, 170, 120, { title: "Google OAuth", color: C.red, lines: ["accounts.google.com", "verifikasi ID token"] });
+  s += arrow([[210, 110], [290, 110]], { color: C.blue, label: "HTTPS", lx: 250, ly: 98, both: true });
+  s += arrow([[490, 115], [540, 115]], { color: C.green, label: "HTTP", lx: 515, ly: 103, both: true });
+  s += arrow([[675, 170], [675, 210]], { color: C.teal });
+  s += arrow([[810, 100], [895, 100]], { color: C.red, label: "SMTP SSL", lx: 853, ly: 88 });
+  s += arrow([[810, 150], [840, 150], [840, 245], [895, 245]], { color: C.red, dashed: true });
+  s += T(20, 380, "Hanya port 80/443 yang dibuka ke publik. Port 3100 hanya didengarkan di localhost dan diakses melalui Nginx.", { size: 12.5 });
+  fig("fig-deploy", 1100, 400, s);
+})();
+
+// ============ D7. Struktur kode ============
+(() => {
+  let s = "";
+  s += group(20, 20, 520, 360, "BACKEND  ·  backend/src", C.indigo);
+  const be = [
+    ["server.ts", "Rute API, guard auth/admin, static", C.indigo], ["auth.ts", "Pengguna, sesi, Google, reset, demo", C.violet],
+    ["sender.ts", "Validasi, prepareJob, runJob", C.teal], ["mailer.ts", "Transporter SMTP, pesan error", C.red],
+    ["templates.ts", "9 template + render HTML/teks", C.pink], ["schedules.ts", "Tabel & scheduler jadwal", C.amber],
+    ["settings.ts", "Pengaturan (key/value JSON)", C.green], ["db.ts", "Koneksi SQLite & skema dasar", C.slate]];
+  be.forEach(([n, d, c], i) => {
+    const x = 40 + (i % 2) * 250, y = 60 + Math.floor(i / 2) * 78;
+    s += box(x, y, 235, 66, { title: n, color: c, lines: [d], titleSize: 14, lineSize: 11.5 });
+  });
+  s += group(580, 20, 500, 360, "FRONTEND  ·  frontend/src", C.blue);
+  const fe = [
+    ["App.vue", "Rangka, navigasi, tema", C.blue], ["AuthView.vue", "Masuk, daftar, lupa, reset", C.violet],
+    ["SendTab.vue", "Kirim & jadwalkan (4 langkah)", C.indigo], ["ScheduleTab.vue", "Daftar & kelola jadwal", C.amber],
+    ["HistoryTab.vue", "Riwayat pengiriman", C.teal], ["SettingsTab.vue", "Profil, akun Gmail, akses", C.green],
+    ["GoogleGuide.vue", "Panduan Client ID Google", C.red], ["api.ts · auth.ts", "Klien API & status login", C.slate]];
+  fe.forEach(([n, d, c], i) => {
+    const x = 600 + (i % 2) * 240, y = 60 + Math.floor(i / 2) * 78;
+    s += box(x, y, 225, 66, { title: n, color: c, lines: [d], titleSize: 14, lineSize: 11.5 });
+  });
+  fig("fig-struktur", 1100, 400, s);
+})();
+</script>
+</body>
+</html>
