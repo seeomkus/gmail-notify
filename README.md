@@ -70,7 +70,7 @@ Ikuti urutan ini sebelum memakai aplikasi. Seluruh langkah berlaku untuk Windows
 | **Akun Gmail** dengan Verifikasi 2 Langkah | Hanya diperlukan untuk mengirim email (dijelaskan di Langkah 5) |
 | Koneksi internet | Untuk `npm install` dan untuk terhubung ke `smtp.gmail.com:465` |
 
-> Jika `npm install` gagal membangun `better-sqlite3` di Linux, pasang alat build terlebih dahulu: `sudo apt install -y build-essential python3` (Debian/Ubuntu). Di Windows biasanya berkas siap pakai diunduh otomatis.
+> Tidak perlu kompiler C++ atau Visual Studio. `better-sqlite3` sudah membawa biner siap pakai untuk Windows, Linux, dan macOS, dan berkas `backend/.npmrc` (`ignore-scripts=true`) mencegah npm mengompilasinya ulang. Jangan hapus berkas itu.
 
 ### Langkah 1: Clone repositori
 
@@ -164,7 +164,7 @@ Pada mode pengembangan, cukup `git pull`. Jika `package.json` berubah, jalankan 
 | `./app.sh: Permission denied` | `chmod +x app.sh scripts/app.mjs`, lalu ulangi |
 | `Node.js 18+ diperlukan` | Perbarui Node.js ke versi 18 atau lebih baru (disarankan 22 LTS) |
 | `Port 3100 sudah dipakai proses lain` | Ubah `PORT` di `backend/.env`, atau hentikan proses yang memakai port itu |
-| Error saat memasang `better-sqlite3` | Pasang alat build (lihat catatan Prasyarat), lalu jalankan `./app.sh build --install` |
+| `gyp ERR! find VS` / `node-gyp rebuild` gagal saat `npm install` | Pastikan `backend/.npmrc` ada (bagian dari repositori), atau jalankan `npm install --ignore-scripts` di folder `backend`. Hanya platform tanpa biner siap pakai (mis. FreeBSD, ARM 32-bit) yang butuh alat build: `build-essential` dan `python3` di Linux |
 | Kartu demo tidak tampil | Normal pada mode produksi (`app.sh start`). Pakai mode pengembangan atau daftar akun sendiri |
 | Email gagal terkirim | Pastikan memakai **App Password**, bukan password login; tes lewat Pengaturan > Tes koneksi |
 
