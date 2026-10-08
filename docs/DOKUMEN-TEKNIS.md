@@ -19,7 +19,7 @@
 |---|---|---|---|---|
 | 1.0.0 | 8 Oktober 2026 | Kusnandar Rohim (SeeOmKus) | Rilis awal dokumen teknis: arsitektur, desain basis data, antarmuka, spesifikasi fungsional dan API, keamanan, konfigurasi dan deployment, pengujian, operasional, serta rencana pengembangan. | Rilis |
 
-> Dokumen ini dibuat otomatis dari sumber yang sama dengan PDF/DOCX (`docs/build`). Versi PDF: [`Dokumen-Teknis-Gmail-Notify-v1.0.0.pdf`](Dokumen-Teknis-Gmail-Notify-v1.0.0.pdf).
+> Dokumen ini dibuat otomatis dari sumber yang sama dengan PDF (`docs/build`). Versi PDF: [`Dokumen-Teknis-Gmail-Notify-v1.0.0.pdf`](Dokumen-Teknis-Gmail-Notify-v1.0.0.pdf).
 
 ## Daftar Isi
 
@@ -293,7 +293,7 @@ gmail-notify/
 │       ├── ui.ts · icons.ts  Toast, dialog, tema, peta ikon
 │       └── components/       AuthView, SendTab, ScheduleTab, HistoryTab,
 │                             SettingsTab, GoogleGuide, ToastHost, Icon...
-├── docs/                     Dokumen teknis (PDF, DOCX, Markdown)
+├── docs/                     Dokumen teknis (PDF dan Markdown)
 │   ├── images/               Diagram dan screenshot
 │   └── build/                Pembuat dokumen
 └── .run/                     PID dan log saat dijalankan lewat app.sh

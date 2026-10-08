@@ -277,26 +277,24 @@ tombol Google di halaman login tampil nonaktif dengan keterangan "Belum diaktifk
 
 ## Dokumentasi teknis
 
-Dokumen teknis lengkap (arsitektur, basis data, antarmuka, API, keamanan, deployment, pengujian, operasional) tersedia dalam tiga format:
+Dokumen teknis lengkap (arsitektur, basis data, antarmuka, API, keamanan, deployment, pengujian, operasional) tersedia dalam dua format:
 
 | Format | Berkas |
 |---|---|
 | PDF (sampul, daftar isi, riwayat revisi, daftar pustaka) | [`docs/Dokumen-Teknis-Gmail-Notify-v1.0.0.pdf`](docs/Dokumen-Teknis-Gmail-Notify-v1.0.0.pdf) |
-| Word (daftar isi dapat diperbarui otomatis) | [`docs/Dokumen-Teknis-Gmail-Notify-v1.0.0.docx`](docs/Dokumen-Teknis-Gmail-Notify-v1.0.0.docx) |
 | Markdown | [`docs/DOKUMEN-TEKNIS.md`](docs/DOKUMEN-TEKNIS.md) |
 
-Ketiganya dibuat dari satu sumber isi di `docs/build/` (`content-1.mjs`, `content-2.mjs`) sehingga selalu konsisten.
+Keduanya dibuat dari satu sumber isi di `docs/build/` (`content-1.mjs`, `content-2.mjs`) sehingga selalu konsisten.
 Untuk memperbarui setelah mengubah isi:
 
 ```bash
 cd docs/build
 npm install
 npm run images   # (opsional) ambil ulang diagram dan screenshot; butuh Chrome dan aplikasi mode demo berjalan
-npm run docs     # bangun DOCX + Markdown, lalu Microsoft Word memperbarui daftar isi dan mengekspor PDF
+npm run docs     # bangun Markdown dan PDF (Microsoft Word memperbarui daftar isi lalu mengekspor PDF)
 ```
 
-Catatan: langkah PDF memakai otomasi Microsoft Word (Windows). Di file DOCX, daftar isi/gambar/tabel dapat diperbarui kapan saja
-dengan menekan `Ctrl+A` lalu `F9`. Saat menaikkan versi, ubah `meta` dan `revisions` di `docs/build/build.mjs`.
+Catatan: langkah PDF memakai otomasi Microsoft Word (Windows). Berkas Word perantara hanya disimpan lokal di `docs/build/out/` (diabaikan git), sehingga yang dipublikasikan hanya PDF yang tidak mudah diubah. Saat menaikkan versi, ubah `meta` dan `revisions` di `docs/build/build.mjs`.
 
 ## Penulis
 

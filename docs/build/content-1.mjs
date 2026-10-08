@@ -179,7 +179,7 @@ gmail-notify/
 │       ├── ui.ts · icons.ts  Toast, dialog, tema, peta ikon
 │       └── components/       AuthView, SendTab, ScheduleTab, HistoryTab,
 │                             SettingsTab, GoogleGuide, ToastHost, Icon...
-├── docs/                     Dokumen teknis (PDF, DOCX, Markdown)
+├── docs/                     Dokumen teknis (PDF dan Markdown)
 │   ├── images/               Diagram dan screenshot
 │   └── build/                Pembuat dokumen
 └── .run/                     PID dan log saat dijalankan lewat app.sh

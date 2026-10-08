@@ -1,9 +1,10 @@
 # Membuka raw.docx di Microsoft Word, memperbarui semua field (daftar isi, daftar gambar/tabel,
-# nomor halaman, STYLEREF), lalu menyimpan DOCX final dan mengekspor PDF.
+# nomor halaman, STYLEREF), lalu mengekspor PDF. DOCX hasil pembaruan hanya disimpan lokal di out/
+# (diabaikan git) agar yang dipublikasikan hanya PDF yang tidak mudah diubah.
 # Prasyarat: Microsoft Word terpasang (otomasi COM). Jalankan: powershell -File finalize.ps1
 param(
   [string]$Raw = (Join-Path $PSScriptRoot "out\raw.docx"),
-  [string]$DocxOut = (Join-Path $PSScriptRoot "..\Dokumen-Teknis-Gmail-Notify-v1.0.0.docx"),
+  [string]$DocxOut = (Join-Path $PSScriptRoot "out\Dokumen-Teknis-Gmail-Notify-v1.0.0.docx"),
   [string]$PdfOut = (Join-Path $PSScriptRoot "..\Dokumen-Teknis-Gmail-Notify-v1.0.0.pdf")
 )
 

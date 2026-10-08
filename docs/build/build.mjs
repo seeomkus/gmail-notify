@@ -486,7 +486,7 @@ md.push("| Atribut | Keterangan |", "|---|---|");
 for (const [k, v] of infoRows) md.push(`| ${k} | ${v} |`);
 md.push("", "## Riwayat Revisi", "", "| Versi | Tanggal | Penyusun | Perubahan | Status |", "|---|---|---|---|---|");
 for (const r of revisions) md.push(`| ${r.version} | ${r.date} | ${r.author} | ${cell(r.change)} | ${r.status} |`);
-md.push("", "> Dokumen ini dibuat otomatis dari sumber yang sama dengan PDF/DOCX (`docs/build`). Versi PDF: [`Dokumen-Teknis-Gmail-Notify-v1.0.0.pdf`](Dokumen-Teknis-Gmail-Notify-v1.0.0.pdf).", "");
+md.push("", "> Dokumen ini dibuat otomatis dari sumber yang sama dengan PDF (`docs/build`). Versi PDF: [`Dokumen-Teknis-Gmail-Notify-v1.0.0.pdf`](Dokumen-Teknis-Gmail-Notify-v1.0.0.pdf).", "");
 
 const bodyMd = [];
 for (const b of body) {

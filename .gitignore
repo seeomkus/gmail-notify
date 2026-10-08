@@ -20,6 +20,7 @@ backend/data
 docs/build/node_modules
 docs/build/.chrome-profile*
 docs/build/out
+docs/*.docx
 
 # lain-lain
 .claude/

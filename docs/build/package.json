@@ -7,16 +7,15 @@
   },
   "homepage": "https://www.seeomkus.com",
   "private": true,
-  "description": "Pembuat dokumen teknis (DOCX, PDF, Markdown) untuk Gmail Notify",
+  "description": "Pembuat dokumen teknis (PDF dan Markdown) untuk Gmail Notify",
   "type": "module",
   "scripts": {
     "images": "node capture.mjs",
     "build": "node build.mjs",
-    "pdf": "powershell -NoProfile -ExecutionPolicy Bypass -File finalize.ps1 && node fixmeta.mjs ../Dokumen-Teknis-Gmail-Notify-v1.0.0.docx \"Kusnandar R\"",
+    "pdf": "powershell -NoProfile -ExecutionPolicy Bypass -File finalize.ps1",
     "docs": "node build.mjs && npm run pdf"
   },
   "dependencies": {
-    "docx": "^9.0.0",
-    "jszip": "^3.10.1"
+    "docx": "^9.0.0"
   }
 }
