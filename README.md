@@ -1,11 +1,57 @@
 # Gmail Notify
 
-Contoh aplikasi untuk mengirim notifikasi email secara manual dari Gmail ke Gmail.
+Aplikasi web untuk mengirim notifikasi email lewat Gmail: template siap pakai, broadcast personal, jadwal otomatis, riwayat pengiriman, serta login manual atau Google.
 
 > **Penulis:** Kusnandar Rohim (**SeeOmKus**) · [www.seeomkus.com](https://www.seeomkus.com) · Oktober 2026
 
 - `backend/` — Express + TypeScript + Nodemailer (SMTP Gmail)
 - `frontend/` — Vue 3 + Vite + TypeScript
+
+## Tampilan aplikasi
+
+Mode terang dan gelap, responsif, dengan ikon Material Design berwarna. Tangkapan layar di bawah diambil pada mode demo (alamat email disamarkan).
+
+### Masuk dan daftar
+
+![Halaman masuk dengan akun demo dan tombol Google](docs/images/ui-login.png)
+
+*Login dengan email atau username, atau akun Google. Kartu "Mode demo" hanya tampil saat pengembangan.*
+
+### Kirim email dalam empat langkah
+
+![Halaman Kirim dengan pilihan template dan pratinjau email](docs/images/ui-kirim.png)
+
+*Pilih template, tentukan penerima, tulis pesan, lalu kirim sekarang atau jadwalkan. Pratinjau email tampil langsung di sisi kanan.*
+
+![Mode Broadcast dengan daftar penerima](docs/images/ui-broadcast.png)
+
+*Broadcast: satu email per penerima dengan personalisasi nama (`{{nama}}`), hingga 200 penerima.*
+
+![Langkah penjadwalan pengiriman mingguan](docs/images/ui-penjadwalan.png)
+
+*Jadwal sekali, per interval menit, harian, atau hari tertentu setiap minggu, lengkap dengan ringkasan kalimat.*
+
+### Jadwal otomatis
+
+![Halaman Jadwal berisi jadwal aktif dan jadwal selesai](docs/images/ui-jadwal.png)
+
+*Pantau waktu berikutnya, hasil terakhir, dan jumlah eksekusi; kirim sekarang, jeda, atau hapus.*
+
+### Riwayat pengiriman
+
+![Halaman Riwayat dengan satu catatan dibuka](docs/images/ui-riwayat.png)
+
+*Setiap email, berhasil maupun gagal, tercatat beserta isi dan pesan error.*
+
+### Pengaturan
+
+![Pengaturan profil, password, dan akun Gmail pengirim](docs/images/ui-pengaturan-akun.png)
+
+*Akun Gmail pengirim dapat diganti dari antarmuka; akun baru diuji dulu sebelum disimpan.*
+
+### Mode gelap
+
+![Mode gelap pada halaman Kirim](docs/images/ui-gelap.png)
 
 ## 1. Siapkan App Password Gmail
 
@@ -108,7 +154,41 @@ Client ID hanya diisi admin setelah login: **Pengaturan > Akses & masuk dengan G
 (buat project, layar persetujuan, test users, OAuth client ID, Authorized JavaScript origins, salin Client ID). Sebelum diisi,
 tombol Google di halaman login tampil nonaktif dengan keterangan "Belum diaktifkan".
 
+## Gambaran arsitektur dan alur
+
+![Arsitektur Gmail Notify](docs/images/diagram-arsitektur.png)
+
+*Arsitektur: browser (Vue 3 SPA), server Node.js + Express dalam satu proses, SQLite, serta layanan Google (SMTP dan verifikasi ID token).*
+
+![Peta modul backend dan frontend](docs/images/diagram-struktur.png)
+
+*Peta modul backend dan frontend beserta tanggung jawabnya.*
+
+![Alur pengiriman email](docs/images/diagram-alur-kirim.png)
+
+*Alur pengiriman: form, validasi, penyusunan template, SMTP, lalu pencatatan riwayat. Jalur yang sama dipakai scheduler.*
+
+![Alur autentikasi](docs/images/diagram-auth.png)
+
+*Tiga alur autentikasi: daftar/masuk manual, Google, dan lupa password.*
+
+![Siklus kerja scheduler](docs/images/diagram-scheduler.png)
+
+*Scheduler memeriksa jadwal jatuh tempo setiap 10 detik.*
+
+![Diagram relasi entitas basis data](docs/images/diagram-erd.png)
+
+*Skema SQLite: users, sessions, password_resets, settings, email_logs, schedules.*
+
+![Topologi deployment di Linux](docs/images/diagram-deploy.png)
+
+*Deployment di Linux: Nginx sebagai reverse proxy HTTPS di depan satu proses Node.js.*
+
 ## Dokumentasi teknis
+
+![Sampul dokumen teknis](docs/images/cover-banner.png)
+
+*Sampul dokumen teknis Gmail Notify v1.0.0 (PDF, DOCX, dan Markdown).*
 
 Dokumen teknis lengkap (arsitektur, basis data, antarmuka, API, keamanan, deployment, pengujian, operasional) tersedia dalam tiga format:
 
