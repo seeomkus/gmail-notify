@@ -57,29 +57,116 @@ Mode terang dan gelap, responsif, dengan ikon Material Design berwarna. Tangkapa
 
 ![Mode gelap pada halaman Kirim](docs/images/ui-gelap.png)
 
-## 1. Siapkan App Password Gmail
+## Instalasi: dari clone sampai berjalan
 
-1. Aktifkan **2-Step Verification** di akun Google pengirim.
-2. Buka https://myaccount.google.com/apppasswords lalu buat App Password (16 karakter).
+Ikuti urutan ini sebelum memakai aplikasi. Seluruh langkah berlaku untuk Windows, Linux, dan macOS.
 
-## 2. Jalankan backend
+### Prasyarat
+
+| Kebutuhan | Keterangan |
+|---|---|
+| **Git** | Untuk mengunduh (clone) repositori |
+| **Node.js 18+** (disarankan 22 LTS) dan **npm** | Cek dengan `node -v` dan `npm -v` |
+| **Akun Gmail** dengan Verifikasi 2 Langkah | Hanya diperlukan untuk mengirim email (dijelaskan di Langkah 5) |
+| Koneksi internet | Untuk `npm install` dan untuk terhubung ke `smtp.gmail.com:465` |
+
+> Jika `npm install` gagal membangun `better-sqlite3` di Linux, pasang alat build terlebih dahulu: `sudo apt install -y build-essential python3` (Debian/Ubuntu). Di Windows biasanya berkas siap pakai diunduh otomatis.
+
+### Langkah 1: Clone repositori
 
 ```bash
+git clone https://github.com/seeomkus/gmail-notify.git
+cd gmail-notify
+```
+
+### Langkah 2: Pasang dependensi
+
+Cara paling mudah, satu perintah untuk memasang dependensi **dan** membangun backend serta frontend:
+
+```bash
+# Linux / macOS
+./app.sh build --install
+
+# Windows (Command Prompt atau PowerShell)
+app.cmd build --install
+```
+
+Atau pasang manual (cukup untuk mode pengembangan):
+
+```bash
+cd backend && npm install && cd ..
+cd frontend && npm install && cd ..
+```
+
+### Langkah 3: Konfigurasi (opsional)
+
+Aplikasi dapat langsung berjalan tanpa berkas konfigurasi. Akun Gmail diatur nanti lewat halaman **Pengaturan**. Jika ingin mengubah port atau nilai awal lainnya, salin berkas contoh:
+
+```bash
+# Linux / macOS
+cp backend/.env.example backend/.env
+
+# Windows
+copy backend\.env.example backend\.env
+```
+
+Port bawaan adalah **3100**. Berkas `backend/.env` berisi data rahasia dan sudah diabaikan git, jangan pernah di-commit.
+
+### Langkah 4: Jalankan aplikasi
+
+Pilih salah satu.
+
+**A. Mode produksi (satu proses, paling sederhana)**
+
+```bash
+./app.sh start      # Linux / macOS
+app.cmd start       # Windows
+```
+
+Pada pemakaian pertama, perintah ini otomatis memasang dependensi dan membangun aplikasi bila belum ada. Buka **http://localhost:3100**, lalu daftarkan akun. **Akun yang pertama mendaftar otomatis menjadi admin.** Perintah lain: `status`, `logs`, `restart`, `stop` (lihat bagian *Menjalankan di server* di bawah).
+
+**B. Mode pengembangan (dua terminal, ada akun demo)**
+
+```bash
+# terminal 1: backend (port 3100)
 cd backend
-npm install
-cp .env.example .env   # isi GMAIL_USER dan GMAIL_APP_PASSWORD
+npm run dev
+
+# terminal 2: frontend (port 5180)
+cd frontend
 npm run dev
 ```
 
-## 3. Jalankan frontend
+Buka **http://localhost:5180**. Pada mode ini kartu **Mode demo** tampil di halaman masuk. Klik **Masuk** pada *Admin Demo* (`admin` / `admin123`).
+
+### Langkah 5: Hubungkan akun Gmail pengirim
+
+1. Aktifkan **Verifikasi 2 Langkah** di akun Google yang akan dipakai mengirim.
+2. Buka https://myaccount.google.com/apppasswords lalu buat **App Password** (16 karakter). Ini bukan password login Gmail Anda.
+3. Masuk ke aplikasi sebagai **admin**, buka **Pengaturan > Akun Gmail pengirim**, klik **Ganti akun**, isi alamat Gmail dan App Password, lalu **Tes & simpan akun**.
+4. Kembali ke halaman **Kirim**, pilih template, lalu klik **Kirim tes ke saya** untuk mencoba.
+
+Login dengan Google bersifat opsional dan perlu OAuth Client ID, lihat bagian *Mengaktifkan "Masuk dengan Google"* di bawah.
+
+### Memperbarui ke versi terbaru
 
 ```bash
-cd frontend
-npm install
-npm run dev
+git pull origin main
+./app.sh restart --build     # Windows: app.cmd restart --build
 ```
 
-Buka http://localhost:5180, isi email tujuan, subjek, dan pesan, lalu klik **Kirim Notifikasi**.
+Pada mode pengembangan, cukup `git pull`. Jika `package.json` berubah, jalankan `npm install` lagi di folder `backend` dan `frontend`.
+
+### Masalah umum saat instalasi
+
+| Gejala | Solusi |
+|---|---|
+| `./app.sh: Permission denied` | `chmod +x app.sh scripts/app.mjs`, lalu ulangi |
+| `Node.js 18+ diperlukan` | Perbarui Node.js ke versi 18 atau lebih baru (disarankan 22 LTS) |
+| `Port 3100 sudah dipakai proses lain` | Ubah `PORT` di `backend/.env`, atau hentikan proses yang memakai port itu |
+| Error saat memasang `better-sqlite3` | Pasang alat build (lihat catatan Prasyarat), lalu jalankan `./app.sh build --install` |
+| Kartu demo tidak tampil | Normal pada mode produksi (`app.sh start`). Pakai mode pengembangan atau daftar akun sendiri |
+| Email gagal terkirim | Pastikan memakai **App Password**, bukan password login; tes lewat Pengaturan > Tes koneksi |
 
 ## API
 
